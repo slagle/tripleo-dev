@@ -32,8 +32,8 @@ buildah config --user $TRIPLEO_DEV_USER $container
 buildah config --workingdir /home/${TRIPLEO_DEV_USER} $container
 
 echo "* Copying and running tripleo-dev-setup"
-buildah copy --chown $TRIPLEO_DEV_USER:$TRIPLEO_DEV_USER $container $SCRIPT_DIR/tripleo-dev-setup /home/$TRIPLEO_DEV_USER/tripleo-dev-setup
-buildah run --user $TRIPLEO_DEV_USER $container /home/$TRIPLEO_DEV_USER/tripleo-dev-setup
+buildah copy --chown root:root $container $SCRIPT_DIR/tripleo-dev-setup /usr/local/bin/tripleo-dev-setup
+buildah run --user $TRIPLEO_DEV_USER $container /usr/local/bin/tripleo-dev-setup
 buildah run --user root $container dnf clean all
 
 echo "* Configuring default command"
