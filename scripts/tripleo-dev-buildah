@@ -19,15 +19,21 @@ echo "** Container id is $container"
 echo "* Configuring container volumes"
 buildah config -v /dev/fuse:/dev/fuse:rw $container
 
-echo "* Creating and configuring $TRIPLEO_DEV_USER"
-buildah run --user root $container useradd -G wheel,root $TRIPLEO_DEV_USER
+if [ $TRIPLEO_DEV_USER != 'podman' ]; then
+  echo "* Renaming 'podman' to '${TRIPLEO_DEV_USER}'"
+  buildah run --user root $container usermod -l $TRIPLEO_DEV_USER podman
+  buildah run --user root $container groupmod -n $TRIPLEO_DEV_USER podman
+  buildah run --user root $container usermod -d /home/${TRIPLEO_DEV_USER} -m $TRIPLEO_DEV_USER
+fi
+echo "* Configuring $TRIPLEO_DEV_USER"
+buildah run --user root $container usermod -a -G wheel,root $TRIPLEO_DEV_USER
 buildah run --user root $container sed -i 's/# %wheel/%wheel/g' /etc/sudoers
-buildah config --user stack $container
-buildah config --workingdir /home/stack $container
+buildah config --user $TRIPLEO_DEV_USER $container
+buildah config --workingdir /home/${TRIPLEO_DEV_USER} $container
 
 echo "* Copying and running tripleo-dev-setup"
-buildah copy --chown $TRIPLEO_DEV_USER:$TRIPLEO_DEV_USER $container $SCRIPT_DIR/tripleo-dev-setup /home/$TRIPLEO_DEV_USER/tripleo-dev-setup
-buildah run --user $TRIPLEO_DEV_USER $container /home/$TRIPLEO_DEV_USER/tripleo-dev-setup
+buildah copy --chown root:root $container $SCRIPT_DIR/tripleo-dev-setup /usr/local/bin/tripleo-dev-setup
+buildah run --user $TRIPLEO_DEV_USER $container /usr/local/bin/tripleo-dev-setup
 buildah run --user root $container dnf clean all
 
 echo "* Configuring default command"
