@@ -47,7 +47,7 @@ fi
 pushd tripleo-repos
 sudo python3 setup.py install
 popd
-sudo /usr/local/bin/tripleo-repos current-tripleo-dev
+sudo /usr/local/bin/tripleo-repos current-tripleo-dev --no-stream
 
 instrpm ansible
 instrpm ansible-collections-openstack
