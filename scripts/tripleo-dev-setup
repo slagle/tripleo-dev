@@ -95,7 +95,7 @@ if ! /usr/local/bin/pip show epdb; then
 fi
 
 echo "* Removing openstackclient"
-sudo dnf erase -y python3-openstackclient --noautoremove
+sudo rpm -evh --nodeps python3-openstackclient
 
 sudo rm -rf /usr/share/python-tripleoclient
 sudo mkdir -p /usr/share/python-tripleoclient
