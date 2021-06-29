@@ -3,6 +3,7 @@
 set -eu
 
 WORKING_DIR=${WORKING_DIR:-"$HOME/code/openstack"}
+WORKING_DIR_USER=$(stat -c "%U" $HOME)
 VENV_DIR=${VENV_DIR:-"$HOME/venvs/openstack"}
 TRACE=${TRACE:-"0"}
 
@@ -37,17 +38,21 @@ instrpm iproute
 instrpm python3-setuptools
 instrpm python3-requests
 
+delrpm python3-pip
+
 mkdir -p $WORKING_DIR
 pushd $WORKING_DIR
 
-if [ ! -d tripleo-repos ]; then
-    git clone https://git.openstack.org/openstack/tripleo-repos
-fi
+if ! grep -q -i fedora /etc/os-release; then
+    if [ ! -d tripleo-repos ]; then
+        git clone https://git.openstack.org/openstack/tripleo-repos
+    fi
 
-pushd tripleo-repos
-sudo python3 setup.py install
-popd
-sudo /usr/local/bin/tripleo-repos current-tripleo-dev --no-stream
+    pushd tripleo-repos
+    sudo python3 setup.py install
+    popd
+    sudo /usr/local/bin/tripleo-repos current-tripleo-dev --no-stream
+fi
 
 instrpm ansible
 instrpm ansible-collections-openstack
@@ -191,10 +196,12 @@ echo "** Symlinking $VENV_DIR/share/tripleo-common/sudoers"
 sudo ln -s $WORKING_DIR/tripleo-common/sudoers $VENV_DIR/share/tripleo-common
 
 if [ ! -f /etc/bash_completion.d/openstack ]; then
+    set +o pipefail
     echo "* Running openstack complete"
     $VENV_DIR/bin/openstack complete | grep -v osc_lib | sudo tee /etc/bash_completion.d/openstack
     source /etc/bash_completion.d/openstack
     source /etc/profile.d/bash_completion.sh
+    set -o pipefail
 fi
 
 echo "* Backing up and removing ~/tripleo-heat-templates"
@@ -206,5 +213,10 @@ if [ -d ~/tripleo-heat-templates ]; then
 fi
 echo "* Symlinking ~/tripleo-heat-templates to $WORKING_DIR/tripleo-heat-templates"
 ln -s -f $WORKING_DIR/tripleo-heat-templates ~/tripleo-heat-templates
+
+if [ -d ~${WORKING_DIR_USER}/.local ]; then
+    echo "* chown ~${WORKING_DIR_USER}/.local to $WORKING_DIR_USER"
+    sudo -E chown -R $WORKING_DIR_USER: ~${WORKING_DIR_USER}/.local
+fi
 
 echo "DONE."

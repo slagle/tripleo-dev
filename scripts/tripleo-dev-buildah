@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -eu
+set -o pipefail
 
 TRACE=${TRACE:-"0"}
 if [ "$TRACE" -eq "1" ]; then
@@ -12,6 +13,8 @@ TRIPLEO_DEV_USER=${TRIPLEO_DEV_USER:-"stack"}
 TRIPLEO_DEV_BASE_IMAGE=${TRIPLEO_DEV_BASE_IMAGE:-"quay.io/podman/stable"}
 TRIPLEO_DEV_IMAGE=${TRIPLEO_DEV_IMAGE:-"tripleo-dev"}
 
+echo "* Removing tripleo-dev-buildah (if exists)"
+buildah rm tripleo-dev-buildah || :
 echo "* Creating container from $TRIPLEO_DEV_BASE_IMAGE"
 container=$(buildah from --name tripleo-dev-buildah $TRIPLEO_DEV_BASE_IMAGE)
 echo "** Container id is $container"
@@ -24,6 +27,8 @@ if [ $TRIPLEO_DEV_USER != 'podman' ]; then
   buildah run --user root $container usermod -l $TRIPLEO_DEV_USER podman
   buildah run --user root $container groupmod -n $TRIPLEO_DEV_USER podman
   buildah run --user root $container usermod -d /home/${TRIPLEO_DEV_USER} -m $TRIPLEO_DEV_USER
+  buildah run --user root $container sed -i 's/podman/stack/' /etc/subuid
+  buildah run --user root $container sed -i 's/podman/stack/' /etc/subgid
 fi
 echo "* Configuring $TRIPLEO_DEV_USER"
 buildah run --user root $container usermod -a -G wheel,root $TRIPLEO_DEV_USER
@@ -31,6 +36,7 @@ buildah run --user root $container sed -i 's/# %wheel/%wheel/g' /etc/sudoers
 buildah config --user $TRIPLEO_DEV_USER $container
 buildah config --workingdir /home/${TRIPLEO_DEV_USER} $container
 
+echo 2>&1
 echo "* Copying and running tripleo-dev-setup"
 buildah copy --chown root:root $container $SCRIPT_DIR/tripleo-dev-setup /usr/local/bin/tripleo-dev-setup
 buildah run --user $TRIPLEO_DEV_USER $container /usr/local/bin/tripleo-dev-setup
@@ -46,7 +52,7 @@ echo "**********************************************"
 echo "**********************************************"
 echo "* Run the following to exec into tripleo-dev:"
 echo "* (Optional) pass:"
-echo "* -v \$CODE_DIR:/home/$TRIPLEO_DEV_USER/openstack:z"
+echo "* -v \$CODE_DIR:/home/$TRIPLEO_DEV_USER/code/openstack:z"
 echo "* where \$CODE_DIR is the directory containing"
 echo "* tripleo git checkouts to use in the container"
 echo
