@@ -38,7 +38,7 @@ instrpm iproute
 instrpm python3-setuptools
 instrpm python3-requests
 
-delrpm python3-pip
+# delrpm python3-pip
 
 mkdir -p $WORKING_DIR
 pushd $WORKING_DIR
