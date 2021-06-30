@@ -43,7 +43,7 @@ instrpm python3-requests
 mkdir -p $WORKING_DIR
 pushd $WORKING_DIR
 
-if ! grep -q -i fedora /etc/os-release; then
+if grep -q -i centos /etc/os-release; then
     if [ ! -d tripleo-repos ]; then
         git clone https://git.openstack.org/openstack/tripleo-repos
     fi
@@ -95,7 +95,7 @@ if ! /usr/local/bin/pip show epdb; then
 fi
 
 echo "* Removing openstackclient"
-sudo rpm -evh --nodeps python3-openstackclient
+sudo rpm -evh --nodeps python3-openstackclient || :
 
 sudo rm -rf /usr/share/python-tripleoclient
 sudo mkdir -p /usr/share/python-tripleoclient
