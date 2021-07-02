@@ -59,11 +59,7 @@ if grep -q -i centos /etc/os-release; then
     sudo /usr/local/bin/tripleo-repos current-tripleo-dev $NO_STREAM
 fi
 
-instrpm ansible
-instrpm ansible-collections-openstack
-instrpm puppet-tripleo
-# Needed for tripleo deploy with --heat-type=native
-instrpm openstack-heat-monolith
+instrpm python3-tripleoclient
 
 if [ ! -d python-tripleoclient ]; then
     echo "* Cloning python-tripleoclient because it does not exist in $WORKING_DIR"
