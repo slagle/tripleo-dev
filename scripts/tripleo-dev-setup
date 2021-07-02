@@ -64,6 +64,8 @@ instrpm ansible-collections-openstack
 instrpm puppet-tripleo
 # Needed for tripleo deploy with --heat-type=native
 instrpm openstack-heat-monolith
+instrpm tripleo-ansible
+sudo rpm -evh --nodeps tripleo-ansible
 
 if [ ! -d python-tripleoclient ]; then
     echo "* Cloning python-tripleoclient because it does not exist in $WORKING_DIR"
