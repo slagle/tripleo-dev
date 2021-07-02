@@ -51,11 +51,19 @@ if grep -q -i centos /etc/os-release; then
     pushd tripleo-repos
     sudo python3 setup.py install
     popd
-    sudo /usr/local/bin/tripleo-repos current-tripleo-dev --no-stream
+    if ! grep -q -i stream /etc/os-release; then
+        NO_STREAM="--no-stream"
+    else
+        NO_STREAM=""
+    fi
+    sudo /usr/local/bin/tripleo-repos current-tripleo-dev $NO_STREAM
 fi
 
 instrpm ansible
 instrpm ansible-collections-openstack
+instrpm puppet-tripleo
+# Needed for tripleo deploy with --heat-type=native
+instrpm openstack-heat-monolith
 
 if [ ! -d python-tripleoclient ]; then
     echo "* Cloning python-tripleoclient because it does not exist in $WORKING_DIR"
