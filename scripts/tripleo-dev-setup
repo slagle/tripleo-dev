@@ -27,6 +27,14 @@ function delrpm {
     fi
 }
 
+function delrpmnodeps {
+    echo "* Checking for $1"
+    if rpm -q $1; then
+        echo "** RPM erasing with --nodeps $1"
+        sudo rpm -evh --nodeps $1
+    fi
+}
+
 instrpm vim-enhanced
 instrpm git
 instrpm gcc
@@ -59,7 +67,12 @@ if grep -q -i centos /etc/os-release; then
     sudo /usr/local/bin/tripleo-repos current-tripleo-dev $NO_STREAM
 fi
 
+# Clean up symlinked dirs from previous run
+sudo rm -rf /usr/share/tripleo-common
+echo "* Installing python3-tripleoclient to get all needed system dependencies"
 instrpm python3-tripleoclient
+delrpmnodeps python3-tripleoclient
+delrpmnodeps python3-openstackclient
 
 if [ ! -d python-tripleoclient ]; then
     echo "* Cloning python-tripleoclient because it does not exist in $WORKING_DIR"
