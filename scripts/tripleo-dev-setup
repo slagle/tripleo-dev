@@ -149,6 +149,15 @@ sudo ln -s $WORKING_DIR/tripleo-common/tripleo_common.egg-info $site_pkgs/
 sudo rm -rf /usr/share/openstack-tripleo-heat-templates
 sudo ln -s $WORKING_DIR/tripleo-heat-templates /usr/share/openstack-tripleo-heat-templates
 
+echo "* Symlinking tripleoclient templates..."
+sudo rm -rf /usr/share/python-tripleoclient/templates
+sudo mkdir -p /usr/share/python-tripleoclient/templates
+for t in $WORKING_DIR/python-tripleoclient/templates/*; do
+    echo "** Symlinking /usr/share/python-tripleoclient/templates/$(basename $t)"
+    sudo rm -rf /usr/share/python-tripleoclient/templates/$(basename $t)
+    sudo ln -sf $t /usr/share/python-tripleoclient/templates/$(basename $t)
+done
+
 echo "* Symlinking ansible playbooks..."
 sudo rm -rf /usr/share/ansible/tripleo-playbooks
 sudo mkdir -p /usr/share/ansible
@@ -231,6 +240,11 @@ ln -s -f $WORKING_DIR/tripleo-heat-templates ~/tripleo-heat-templates
 if [ -d ~${WORKING_DIR_USER}/.local ]; then
     echo "* chown ~${WORKING_DIR_USER}/.local to $WORKING_DIR_USER"
     sudo -E chown -R $WORKING_DIR_USER: ~${WORKING_DIR_USER}/.local
+fi
+
+ctlplane_hostname=$(hostname -s).ctlplane
+if ! grep $ctlplane_hostname /etc/hosts; then
+    echo "127.0.0.1 ${ctlplane_hostname}" >> /etc/hosts
 fi
 
 echo "DONE."
