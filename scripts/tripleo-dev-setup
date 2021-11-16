@@ -235,7 +235,7 @@ fi
 
 ctlplane_hostname=$(hostname -s).ctlplane
 if ! grep $ctlplane_hostname /etc/hosts; then
-    echo "127.0.0.1 ${ctlplane_hostname}" >> /etc/hosts
+    echo "127.0.0.1 ${ctlplane_hostname}" | sudo tee -a /etc/hosts
 fi
 
 echo "DONE."
