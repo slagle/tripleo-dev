@@ -69,10 +69,8 @@ fi
 
 # Clean up symlinked dirs from previous run
 sudo rm -rf /usr/share/tripleo-common
-echo "* Installing python3-tripleoclient to get all needed system dependencies"
-instrpm python3-tripleoclient
-delrpmnodeps python3-tripleoclient
-delrpmnodeps python3-openstackclient
+echo "* Installing ansible"
+instrpm ansible
 
 if [ ! -d python-tripleoclient ]; then
     echo "* Cloning python-tripleoclient because it does not exist in $WORKING_DIR"
