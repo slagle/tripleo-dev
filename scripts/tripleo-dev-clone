@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -eu
+
+WORKING_DIR=${WORKING_DIR:-"$HOME/code/openstack"}
+WORKING_DIR_USER=$(stat -c "%U" $HOME)
+VENV_DIR=${VENV_DIR:-"$HOME/venvs/openstack"}
+TRACE=${TRACE:-"0"}
+SCRIPT_DIR=$(realpath $(dirname $0))
+
+if [ "$TRACE" -eq "1" ]; then
+    set -x
+fi
+
+mkdir -p $WORKING_DIR
+pushd $WORKING_DIR
+
+if [ ! -d python-tripleoclient ]; then
+    echo "* Cloning python-tripleoclient because it does not exist in $WORKING_DIR"
+	git clone https://opendev.org/openstack/python-tripleoclient
+fi
+if [ ! -d tripleo-common ]; then
+    echo "* Cloning tripleo-common because it does not exist in $WORKING_DIR"
+	git clone https://opendev.org/openstack/tripleo-common
+fi
+if [ ! -d tripleo-ansible ]; then
+    echo "* Cloning tripleo-ansible because it does not exist in $WORKING_DIR"
+	git clone https://opendev.org/openstack/tripleo-ansible
+fi
+if [ ! -d tripleo-heat-templates ]; then
+    echo "* Cloning tripleo-heat-templates because it does not exist in $WORKING_DIR"
+	git clone https://opendev.org/openstack/tripleo-heat-templates
+fi
+
+popd

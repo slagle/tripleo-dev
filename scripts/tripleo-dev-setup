@@ -49,9 +49,6 @@ instrpm python3-requests
 
 # delrpm python3-pip
 
-mkdir -p $WORKING_DIR
-pushd $WORKING_DIR
-
 if grep -q -i centos /etc/os-release; then
     if [ ! -d tripleo-repos ]; then
         git clone https://git.openstack.org/openstack/tripleo-repos
@@ -73,23 +70,7 @@ sudo rm -rf /usr/share/tripleo-common
 echo "* Installing ansible"
 instrpm ansible
 
-if [ ! -d python-tripleoclient ]; then
-    echo "* Cloning python-tripleoclient because it does not exist in $WORKING_DIR"
-	git clone https://opendev.org/openstack/python-tripleoclient
-fi
-if [ ! -d tripleo-common ]; then
-    echo "* Cloning tripleo-common because it does not exist in $WORKING_DIR"
-	git clone https://opendev.org/openstack/tripleo-common
-fi
-if [ ! -d tripleo-ansible ]; then
-    echo "* Cloning tripleo-ansible because it does not exist in $WORKING_DIR"
-	git clone https://opendev.org/openstack/tripleo-ansible
-fi
-if [ ! -d tripleo-heat-templates ]; then
-    echo "* Cloning tripleo-heat-templates because it does not exist in $WORKING_DIR"
-	git clone https://opendev.org/openstack/tripleo-heat-templates
-fi
-popd
+${SCRIPT_DIR}/tripleo-dev-clone
 
 pushd ~
 echo "* Checking for pip"
