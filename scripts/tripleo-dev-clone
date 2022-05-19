@@ -27,6 +27,10 @@ if [ ! -d tripleo-ansible ]; then
     echo "* Cloning tripleo-ansible because it does not exist in $WORKING_DIR"
 	git clone https://opendev.org/openstack/tripleo-ansible
 fi
+if [ ! -d ansible-role-chrony ]; then
+    echo "* Cloning tripleo-ansible because it does not exist in $WORKING_DIR"
+	git clone https://opendev.org/openstack/ansible-role-chrony
+fi
 if [ ! -d tripleo-heat-templates ]; then
     echo "* Cloning tripleo-heat-templates because it does not exist in $WORKING_DIR"
 	git clone https://opendev.org/openstack/tripleo-heat-templates
