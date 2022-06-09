@@ -37,6 +37,8 @@ function delrpmnodeps {
     fi
 }
 
+source /etc/os-release
+
 instrpm vim-enhanced
 instrpm git
 instrpm gcc
@@ -57,7 +59,12 @@ fi
 # Clean up symlinked dirs from previous run
 sudo rm -rf /usr/share/tripleo-common
 echo "* Installing ansible"
-instrpm ansible ansible-core
+if [ "${VERSION}" -eq "9" ]; then
+    instrpm ansible-core
+else
+    instrpm ansible
+fi
+
 
 ${SCRIPT_DIR}/tripleo-dev-clone
 
