@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+TRACE=${TRACE:-"0"}
+if [ "$TRACE" -eq "1" ]; then
+    set -x
+fi
+
+if grep -q -i centos /etc/os-release; then
+    if [ ! -d tripleo-repos ]; then
+        git clone https://git.openstack.org/openstack/tripleo-repos
+    fi
+
+    pushd tripleo-repos
+    sudo python3 setup.py install
+    popd
+    if ! grep -q -i stream /etc/os-release; then
+        NO_STREAM="--no-stream"
+    else
+        NO_STREAM=""
+    fi
+    sudo /usr/local/bin/tripleo-repos current-tripleo-dev $NO_STREAM
+fi

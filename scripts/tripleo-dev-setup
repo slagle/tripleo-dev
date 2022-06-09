@@ -6,6 +6,7 @@ WORKING_DIR=${WORKING_DIR:-"$HOME/code/openstack"}
 WORKING_DIR_USER=$(stat -c "%U" $HOME)
 VENV_DIR=${VENV_DIR:-"$HOME/venvs/openstack"}
 TRACE=${TRACE:-"0"}
+REPOS=${REPOS:-"0"}
 SCRIPT_DIR=$(realpath $(dirname $0))
 
 if [ "$TRACE" -eq "1" ]; then
@@ -49,20 +50,8 @@ instrpm python3-requests
 
 # delrpm python3-pip
 
-if grep -q -i centos /etc/os-release; then
-    if [ ! -d tripleo-repos ]; then
-        git clone https://git.openstack.org/openstack/tripleo-repos
-    fi
-
-    pushd tripleo-repos
-    sudo python3 setup.py install
-    popd
-    if ! grep -q -i stream /etc/os-release; then
-        NO_STREAM="--no-stream"
-    else
-        NO_STREAM=""
-    fi
-    sudo /usr/local/bin/tripleo-repos current-tripleo-dev $NO_STREAM
+if [ "${REPOS}" -ne "0" ]; then
+    ${SCRIPT_DIR}/tripleo-dev-tripleo-repos
 fi
 
 # Clean up symlinked dirs from previous run
