@@ -68,7 +68,7 @@ fi
 # Clean up symlinked dirs from previous run
 sudo rm -rf /usr/share/tripleo-common
 echo "* Installing ansible"
-instrpm ansible
+instrpm ansible ansible-core
 
 ${SCRIPT_DIR}/tripleo-dev-clone
 
