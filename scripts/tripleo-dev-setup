@@ -39,6 +39,11 @@ function delrpmnodeps {
 
 source /etc/os-release
 
+if [ "${REPOS}" -ne "0" ]; then
+    ${SCRIPT_DIR}/tripleo-dev-tripleo-repos
+fi
+
+instrpm python3-tripleoclient
 instrpm vim-enhanced
 instrpm git
 instrpm gcc
@@ -50,17 +55,13 @@ instrpm iproute
 instrpm python3-setuptools
 instrpm python3-requests
 
-# delrpm python3-pip
-
-if [ "${REPOS}" -ne "0" ]; then
-    ${SCRIPT_DIR}/tripleo-dev-tripleo-repos
-fi
+delrpm python3-pip
 
 # Clean up symlinked dirs from previous run
 sudo rm -rf /usr/share/tripleo-common
 echo "* Installing ansible"
 if [ "${VERSION}" -eq "9" ]; then
-    instrpm ansible-core
+    instrpm ansible-core ansible-collection-ansible-posix ansible-collection-containers-podman
 else
     instrpm ansible
 fi
