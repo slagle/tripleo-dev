@@ -151,7 +151,7 @@ if [ ! -d $VENV_DIR ]; then
     # We need to pin openstacksdk to 0.61 due to incompatibility with
     # ansible-openstack-collection
     $VENV_DIR/bin/pip uninstall -y openstacksdk
-    $VENV_DIR/bin/pip install -F openstacksdk==0.61
+    $VENV_DIR/bin/pip install --force-reinstall openstacksdk==0.61
 
 fi
 
