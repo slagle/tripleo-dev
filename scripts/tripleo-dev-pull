@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -eu
+
+WORKING_DIR=${WORKING_DIR:-"$HOME/code/openstack"}
+WORKING_DIR_USER=$(stat -c "%U" $HOME)
+VENV_DIR=${VENV_DIR:-"$HOME/venvs/openstack"}
+TRACE=${TRACE:-"0"}
+SCRIPT_DIR=$(realpath $(dirname $0))
+CHECKOUTS=${CHECKOUTS:-"python-tripleoclient tripleo-common tripleo-ansible ansible-role-chrony tripleo-heat-templates"}
+
+if [ "$TRACE" -eq "1" ]; then
+    set -x
+fi
+
+mkdir -p $WORKING_DIR
+pushd $WORKING_DIR
+
+for c in ${CHECKOUTS}; do
+    if [ ! -d ${c} ]; then
+        echo "* ${c} does not exist in $WORKING_DIR"
+    else
+        echo "* git pulling ${c} in $WORKING_DIR"
+        pushd ${c}
+        git pull
+        popd
+    fi
+done
+
+popd
