@@ -142,17 +142,13 @@ if [ ! -d $VENV_DIR ]; then
     echo "** pip installing fixtures/greenlet for deps"
     $VENV_DIR/bin/pip install fixtures greenlet
     echo "** pip installing openstackclient"
-    $VENV_DIR/bin/pip install openstackclient
+    # We need to pin openstacksdk to 0.61 due to incompatibility with
+    # ansible-openstack-collection
+    $VENV_DIR/bin/pip install openstackclient openstacksdk==0.61
     echo "** pip installing tripleoclient requirements"
     $VENV_DIR/bin/pip install -r $WORKING_DIR/python-tripleoclient/requirements.txt
     echo "** pip installing tripleo-common requirements"
     $VENV_DIR/bin/pip install -r $WORKING_DIR/tripleo-common/requirements.txt
-
-    # We need to pin openstacksdk to 0.61 due to incompatibility with
-    # ansible-openstack-collection
-    $VENV_DIR/bin/pip uninstall -y openstacksdk
-    $VENV_DIR/bin/pip install --force-reinstall openstacksdk==0.61
-
 fi
 
 
