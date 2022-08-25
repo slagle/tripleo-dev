@@ -4,7 +4,6 @@ set -eu
 
 WORKING_DIR=${WORKING_DIR:-"$HOME/code/openstack"}
 WORKING_DIR_USER=$(stat -c "%U" $HOME)
-VENV_DIR=${VENV_DIR:-"$HOME/venvs/openstack"}
 TRACE=${TRACE:-"0"}
 REPOS=${REPOS:-"0"}
 SCRIPT_DIR=$(realpath $(dirname $0))
@@ -43,7 +42,7 @@ if [ "${REPOS}" -ne "0" ]; then
     ${SCRIPT_DIR}/tripleo-dev-tripleo-repos
 fi
 
-instrpm python3-tripleoclient
+instrpm python3-tripleoclient openstack-tripleo-common tripleo-ansible
 instrpm vim-enhanced
 instrpm git
 instrpm gcc
@@ -56,6 +55,7 @@ instrpm python3-setuptools
 instrpm python3-requests
 
 delrpm python3-pip
+delrpmnodeps python3-tripleoclient openstack-tripleo-common tripleo-ansible
 
 # Clean up symlinked dirs from previous run
 sudo rm -rf /usr/share/tripleo-common
@@ -135,44 +135,10 @@ sudo ln -s $WORKING_DIR/tripleo-heat-templates /usr/share/openstack-tripleo-heat
 
 ${SCRIPT_DIR}/tripleo-dev-symlink-tripleo-ansible
 
-if [ ! -d $VENV_DIR ]; then
-    echo "* Creating $VENV_DIR"
-    mkdir -p $VENV_DIR
-    virtualenv --system-site-packages $VENV_DIR
-    echo "** pip installing fixtures/greenlet for deps"
-    $VENV_DIR/bin/pip install fixtures greenlet
-    echo "** pip installing openstackclient"
-    # We need to pin openstacksdk to 0.61 due to incompatibility with
-    # ansible-openstack-collection
-    $VENV_DIR/bin/pip install openstackclient openstacksdk==0.61
-    echo "** pip installing tripleoclient requirements"
-    $VENV_DIR/bin/pip install -r $WORKING_DIR/python-tripleoclient/requirements.txt
-    echo "** pip installing tripleo-common requirements"
-    $VENV_DIR/bin/pip install -r $WORKING_DIR/tripleo-common/requirements.txt
-fi
-
-
-echo "** Symlinking /usr/bin/openstack"
-sudo ln -sf $VENV_DIR/bin/openstack /usr/bin/
-
-echo "* Creating $VENV_DIR/share/tripleo-common"
-sudo rm -rf $VENV_DIR/share/tripleo-common
-sudo mkdir -p $VENV_DIR/share/tripleo-common
-echo "** Symlinking $VENV_DIR/share/tripleo-common/container-images"
-sudo ln -s $WORKING_DIR/tripleo-common/container-images $VENV_DIR/share/tripleo-common
-echo "** Symlinking $VENV_DIR/share/tripleo-common/healthcheck"
-sudo ln -s $WORKING_DIR/tripleo-common/healthcheck $VENV_DIR/share/tripleo-common
-echo "** Symlinking $VENV_DIR/share/tripleo-common/heat_docker_agent"
-sudo ln -s $WORKING_DIR/tripleo-common/heat_docker_agent $VENV_DIR/share/tripleo-common
-echo "** Symlinking $VENV_DIR/share/tripleo-common/image-yaml"
-sudo ln -s $WORKING_DIR/tripleo-common/image-yaml $VENV_DIR/share/tripleo-common
-echo "** Symlinking $VENV_DIR/share/tripleo-common/sudoers"
-sudo ln -s $WORKING_DIR/tripleo-common/sudoers $VENV_DIR/share/tripleo-common
-
 if [ ! -f /etc/bash_completion.d/openstack ]; then
     set +o pipefail
     echo "* Running openstack complete"
-    $VENV_DIR/bin/openstack complete | grep -v osc_lib | sudo tee /etc/bash_completion.d/openstack
+    openstack complete | grep -v osc_lib | sudo tee /etc/bash_completion.d/openstack
     source /etc/bash_completion.d/openstack
     source /etc/profile.d/bash_completion.sh
     set -o pipefail
