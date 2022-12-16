@@ -9,9 +9,18 @@ if [ "$TRACE" -eq "1" ]; then
 fi
 
 SCRIPT_DIR=$(dirname $0)
+TRIPLEO_DEV_SCRIPT_DIR=$(dirname $0)/..
 TRIPLEO_DEV_USER=${TRIPLEO_DEV_USER:-"stack"}
-TRIPLEO_DEV_BASE_IMAGE=${TRIPLEO_DEV_BASE_IMAGE:-"quay.io/podman/stable"}
+TRIPLEO_DEV_BASE_IMAGE=${TRIPLEO_DEV_BASE_IMAGE:-"tripleo-dev-buildah-base"}
 TRIPLEO_DEV_IMAGE=${TRIPLEO_DEV_IMAGE:-"tripleo-dev"}
+
+if ! podman image inspect ${TRIPLEO_DEV_BASE_IMAGE} 2>&1 1>/dev/null; then
+    echo "* Building ${TRIPLEO_DEV_BASE_IMAGE}"
+    buildah build -f ${SCRIPT_DIR}/Containerfile -t ${TRIPLEO_DEV_BASE_IMAGE}
+else
+    echo "* Not Building ${TRIPLEO_DEV_BASE_IMAGE} because it already exists."
+    echo "** podman rmi ${TRIPLEO_DEV_BASE_IMAGE} if you want to force a build."
+fi
 
 echo "* Removing tripleo-dev-buildah (if exists)"
 buildah rm tripleo-dev-buildah || :
@@ -22,24 +31,16 @@ echo "** Container id is $container"
 echo "* Configuring container volumes"
 buildah config -v /dev/fuse:/dev/fuse:rw $container
 
-if [ $TRIPLEO_DEV_USER != 'podman' ]; then
-  echo "* Renaming 'podman' to '${TRIPLEO_DEV_USER}'"
-  buildah run --user root $container usermod -l $TRIPLEO_DEV_USER podman
-  buildah run --user root $container groupmod -n $TRIPLEO_DEV_USER podman
-  buildah run --user root $container usermod -d /home/${TRIPLEO_DEV_USER} -m $TRIPLEO_DEV_USER
-  buildah run --user root $container sed -i 's/podman/stack/' /etc/subuid
-  buildah run --user root $container sed -i 's/podman/stack/' /etc/subgid
-fi
 echo "* Configuring $TRIPLEO_DEV_USER"
-buildah run --user root $container usermod -a -G wheel,root $TRIPLEO_DEV_USER
+buildah run --user root $container useradd -G wheel,root $TRIPLEO_DEV_USER
 buildah run --user root $container sed -i 's/# %wheel/%wheel/g' /etc/sudoers
 buildah config --user $TRIPLEO_DEV_USER $container
 buildah config --workingdir /home/${TRIPLEO_DEV_USER} $container
 
 echo 2>&1
 echo "* Copying and running tripleo-dev-setup"
-buildah copy --chown root:root $container $SCRIPT_DIR/tripleo-dev-setup /usr/local/bin/tripleo-dev-setup
-buildah run --user $TRIPLEO_DEV_USER $container /usr/local/bin/tripleo-dev-setup
+buildah copy --chown root:root $container $TRIPLEO_DEV_SCRIPT_DIR/* /usr/local/bin/
+buildah run --user $TRIPLEO_DEV_USER --env REPOS=1 $container /usr/local/bin/tripleo-dev-setup
 buildah run --user root $container dnf clean all
 
 echo "* Configuring default command"

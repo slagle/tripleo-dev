@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -eux
 
 WORKING_DIR=${WORKING_DIR:-"$HOME/code/openstack"}
 WORKING_DIR_USER=$(stat -c "%U" $HOME)
@@ -38,13 +38,15 @@ function delrpmnodeps {
 
 source /etc/os-release
 
+instrpm git
+instrpm python3-requests
+
 if [ "${REPOS}" -ne "0" ]; then
     ${SCRIPT_DIR}/tripleo-dev-tripleo-repos
 fi
 
 instrpm python3-tripleoclient openstack-tripleo-common tripleo-ansible
 instrpm vim-enhanced
-instrpm git
 instrpm gcc
 instrpm python3-devel
 instrpm bash-completion
@@ -52,7 +54,6 @@ instrpm which
 instrpm findutils
 instrpm iproute
 instrpm python3-setuptools
-instrpm python3-requests
 
 delrpm python3-pip
 delrpmnodeps python3-tripleoclient openstack-tripleo-common tripleo-ansible
